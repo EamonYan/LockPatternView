@@ -21,3 +21,5 @@ Step 2. Add the dependency
 	}
 	
 	
+
+最新版本1.0.2，添加自定义属性。
