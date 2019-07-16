@@ -1,6 +1,7 @@
 package cn.npe1348.lib_lockpatternview;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -21,13 +22,22 @@ import java.util.List;
  * 1.绘制九个格子,每排三个,每个格子占屏幕宽的1/3(注意,竖屏就是占高的1/3)
  */
 public class LockPatternView extends View {
-
+    private Context mContext;
     private String mPassword = "123456";
     private Point[][] mPoints = new Point[3][3];
     // 外圆的半径
-    private int mDotRadius = 0;
+    private int mOuterDotRadius = 80;
     //内圆半径
-    private int mInnerDotRadius = 0;
+    private int mInnerDotRadius = 15;
+    //外圆环宽度
+    private int mOuterDotStroke = 5;
+    //线宽度
+    private int mLineStroke = 5;
+
+    private int mNormalColor = Color.BLACK;
+    private int mPressColor = Color.BLUE;
+    private int mPassColor = Color.GREEN;
+    private int mErrorColor = Color.RED;
 
     private boolean mIsInit = false;
 
@@ -67,6 +77,10 @@ public class LockPatternView extends View {
         public void isUnLockSuccess(boolean success,String selectIndexStr);
     }
 
+    public int dp2px(int dpValue) {
+        return (int) (0.5f + dpValue * mContext.getResources().getDisplayMetrics().density);
+    }
+
     public LockPatternView(Context context) {
         this(context,null);
     }
@@ -77,6 +91,18 @@ public class LockPatternView extends View {
 
     public LockPatternView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        this.mContext = context;
+        TypedArray array = context.obtainStyledAttributes(attrs,R.styleable.LockPatternView);
+        mOuterDotRadius = array.getDimensionPixelSize(R.styleable.LockPatternView_outer_dot_radius,dp2px(mOuterDotRadius));
+        mInnerDotRadius = array.getDimensionPixelSize(R.styleable.LockPatternView_inner_dot_radius,dp2px(mInnerDotRadius));
+        mOuterDotStroke = array.getDimensionPixelSize(R.styleable.LockPatternView_outer_dot_stroke,dp2px(mOuterDotStroke));
+        mLineStroke = array.getDimensionPixelSize(R.styleable.LockPatternView_line_stroke,dp2px(mLineStroke));
+
+        mNormalColor = array.getColor(R.styleable.LockPatternView_normal_color,mNormalColor);
+        mPressColor = array.getColor(R.styleable.LockPatternView_press_color,mPressColor);
+        mPassColor = array.getColor(R.styleable.LockPatternView_pass_color,mPassColor);
+        mErrorColor = array.getColor(R.styleable.LockPatternView_error_color,mErrorColor);
+        array.recycle();
     }
 
     public void setPassword(String password) {
@@ -103,10 +129,6 @@ public class LockPatternView extends View {
         }
         //每个点占1/3
         int squareWidth = mWidth/3;
-        //外圆的半径为点的宽度的1/3,这样不会显得挤
-        mDotRadius = squareWidth/3;
-        //内圆半径为外圆半径的1/6
-        mInnerDotRadius = mDotRadius/6;
 
         for (int i = 0;i<mPoints.length;i++) {
             for (int j = 0;j<mPoints[i].length;j++) {
@@ -125,81 +147,77 @@ public class LockPatternView extends View {
         // 默认的外圆画笔
         mOuterNormalPaint = new Paint();
         //颜色可以自定义
-        mOuterNormalPaint.setColor(Color.BLACK);
+        mOuterNormalPaint.setColor(mNormalColor);
         //外圆为空心的
         mOuterNormalPaint.setStyle(Paint.Style.STROKE);
         mOuterNormalPaint.setAntiAlias(true);
-        mOuterNormalPaint.setStrokeWidth(mDotRadius / 9);
+        mOuterNormalPaint.setStrokeWidth(mOuterDotStroke);
 
 
         // 默认的内圆画笔
         mInnerNormalPaint = new Paint();
         //颜色可以自定义
-        mInnerNormalPaint.setColor(Color.BLACK);
+        mInnerNormalPaint.setColor(mNormalColor);
         //内圆为实心的
         mInnerNormalPaint.setStyle(Paint.Style.FILL);
         mInnerNormalPaint.setAntiAlias(true);
-        mInnerNormalPaint.setStrokeWidth(mDotRadius / 6);
 
         // 按下的外圆画笔
         mOuterPressedPaint = new Paint();
-        mOuterPressedPaint.setColor(Color.BLUE);
+        mOuterPressedPaint.setColor(mPressColor);
         mOuterPressedPaint.setStyle(Paint.Style.STROKE);
         mOuterPressedPaint.setAntiAlias(true);
-        mOuterPressedPaint.setStrokeWidth(mDotRadius / 9);
+        mOuterPressedPaint.setStrokeWidth(mOuterDotStroke);
 
         // 按下的内圆画笔
         mInnerPressedPaint = new Paint();
-        mInnerPressedPaint.setColor(Color.BLUE);
+        mInnerPressedPaint.setColor(mPressColor);
         mInnerPressedPaint.setStyle(Paint.Style.FILL);
         mInnerPressedPaint.setAntiAlias(true);
-        mInnerPressedPaint.setStrokeWidth(mDotRadius / 6);
 
         // 线的画笔
         mLinePaint = new Paint();
-        mLinePaint.setColor(Color.BLUE);
+        mLinePaint.setColor(mPressColor);
         mLinePaint.setStyle(Paint.Style.STROKE);
         mLinePaint.setAntiAlias(true);
-        mLinePaint.setStrokeWidth(mDotRadius / 9);
+        mLinePaint.setStrokeWidth(mLineStroke);
 
         // 错误的线的画笔
         mErrorLinePaint = new Paint();
-        mErrorLinePaint.setColor(Color.RED);
+        mErrorLinePaint.setColor(mErrorColor);
         mErrorLinePaint.setStyle(Paint.Style.STROKE);
         mErrorLinePaint.setAntiAlias(true);
-        mErrorLinePaint.setStrokeWidth(mDotRadius / 9);
+        mErrorLinePaint.setStrokeWidth(mLineStroke);
         // 通过的线的画笔
         mPassLinePaint = new Paint();
-        mPassLinePaint.setColor(Color.GREEN);
+        mPassLinePaint.setColor(mPassColor);
         mPassLinePaint.setStyle(Paint.Style.STROKE);
         mPassLinePaint.setAntiAlias(true);
-        mPassLinePaint.setStrokeWidth(mDotRadius / 9);
+        mPassLinePaint.setStrokeWidth(mLineStroke);
 
         //错误的外圆画笔
         mOuterErrorPaint = new Paint();
-        mOuterErrorPaint.setColor(Color.RED);
+        mOuterErrorPaint.setColor(mErrorColor);
         mOuterErrorPaint.setStyle(Paint.Style.STROKE);
         mOuterErrorPaint.setAntiAlias(true);
-        mOuterErrorPaint.setStrokeWidth(mDotRadius / 9);
+        mOuterErrorPaint.setStrokeWidth(mOuterDotStroke);
         //通过的外圆画笔
         mOuterPassPaint = new Paint();
-        mOuterPassPaint.setColor(Color.GREEN);
+        mOuterPassPaint.setColor(mPassColor);
         mOuterPassPaint.setStyle(Paint.Style.STROKE);
         mOuterPassPaint.setAntiAlias(true);
-        mOuterPassPaint.setStrokeWidth(mDotRadius / 9);
+        mOuterPassPaint.setStrokeWidth(mOuterDotStroke);
 
         //错误的内圆画笔
         mInnerErrorPaint = new Paint();
-        mInnerErrorPaint.setColor(Color.RED);
+        mInnerErrorPaint.setColor(mErrorColor);
         mInnerErrorPaint.setStyle(Paint.Style.FILL);
         mInnerErrorPaint.setAntiAlias(true);
-        mInnerErrorPaint.setStrokeWidth(mDotRadius / 6);
         //通过的内圆画笔
         mInnerPassPaint = new Paint();
-        mInnerPassPaint.setColor(Color.GREEN);
+        mInnerPassPaint.setColor(mPassColor);
         mInnerPassPaint.setStyle(Paint.Style.FILL);
         mInnerPassPaint.setAntiAlias(true);
-        mInnerPassPaint.setStrokeWidth(mDotRadius / 6);
     }
 
     @Override
@@ -358,7 +376,7 @@ public class LockPatternView extends View {
                 // 循环遍历九个点
                 Point point = mPoints[i][j];
 
-                if (x>point.centerX-mDotRadius && x < point.centerX+mDotRadius && y>point.centerY-mDotRadius && y<point.centerY+mDotRadius){
+                if (x>point.centerX-mOuterDotRadius && x < point.centerX+mOuterDotRadius && y>point.centerY-mOuterDotRadius && y<point.centerY+mOuterDotRadius){
                     return point;
                 }
             }
@@ -373,16 +391,16 @@ public class LockPatternView extends View {
                 Point point = mPoints[i][j];
                 if (Point.STATUS_NORMAL == point.status) {
                     canvas.drawCircle(point.centerX, point.centerY, mInnerDotRadius, mInnerNormalPaint);
-                    canvas.drawCircle(point.centerX, point.centerY, mDotRadius, mOuterNormalPaint);
+                    canvas.drawCircle(point.centerX, point.centerY, mOuterDotRadius, mOuterNormalPaint);
                 }else if(Point.STATUS_PRESSED == point.status){
                     canvas.drawCircle(point.centerX, point.centerY, mInnerDotRadius, mInnerPressedPaint);
-                    canvas.drawCircle(point.centerX, point.centerY, mDotRadius, mOuterPressedPaint);
+                    canvas.drawCircle(point.centerX, point.centerY, mOuterDotRadius, mOuterPressedPaint);
                 }else if(Point.STATUS_ERROR == point.status){
                     canvas.drawCircle(point.centerX, point.centerY, mInnerDotRadius, mInnerErrorPaint);
-                    canvas.drawCircle(point.centerX, point.centerY, mDotRadius, mOuterErrorPaint);
+                    canvas.drawCircle(point.centerX, point.centerY, mOuterDotRadius, mOuterErrorPaint);
                 }else if(Point.STATUS_PASS == point.status){
                     canvas.drawCircle(point.centerX, point.centerY, mInnerDotRadius, mInnerPassPaint);
-                    canvas.drawCircle(point.centerX, point.centerY, mDotRadius, mOuterPassPaint);
+                    canvas.drawCircle(point.centerX, point.centerY, mOuterDotRadius, mOuterPassPaint);
                 }
             }
         }

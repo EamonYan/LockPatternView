@@ -9,6 +9,14 @@
     <cn.npe1348.lib_lockpatternview.LockPatternView
         android:id="@+id/lock_pattern_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        app:normal_color="@color/colorBlack"
+        app:press_color="@color/colorBlue"
+        app:pass_color="@color/colorGreen"
+        app:error_color="@color/colorRed"
+        app:outer_dot_radius="50dp"
+        app:inner_dot_radius="15dp"
+        app:outer_dot_stroke="5dp"
+        app:line_stroke="5dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
