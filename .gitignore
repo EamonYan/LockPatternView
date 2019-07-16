@@ -63,3 +63,7 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
+lib_lockpatternview/src/test/
+lib_lockpatternview/src/androidTest/
+app/src/test/
+app/src/androidTest/
